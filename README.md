@@ -1,5 +1,5 @@
 # RBI Financial & Operations Risk Guidelines Chatbot
----
+
 This project implements a **Retrieval-Augmented Generation (RAG)** chatbot that answers questions related to the Reserve Bank of India (RBI) Financial and Operations Risk Guidelines. The system uses a FAISS vector store to retrieve context from ingested documents and leverages an Ollama-backed language model (via LangChain) to generate concise, bullet-pointed responses. A Streamlit frontend provides a user-friendly web interface.
 
 
