@@ -22,10 +22,10 @@ This project implements a **Retrieval-Augmented Generation (RAG)** chatbot that 
 
 ```
 .
-├── app.py             # Streamlit frontend for the chatbot
-├── qa_module.py       # Contains the get_answer() function and RAG pipeline logic
-├── chunk_tuning.py    # (Optional) Script to experiment with document chunk sizes
-├── README.md          # This file
+├── frontend.py             # Streamlit frontend for the chatbot
+├── chatbot_backend.py      # Contains the get_answer() function and RAG pipeline logic
+├── RAG-Project.ipynb   
+├── README.md              # This file
 └── requirements.txt   # Python dependencies
 ```
 
