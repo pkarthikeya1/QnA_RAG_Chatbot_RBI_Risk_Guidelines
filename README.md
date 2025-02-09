@@ -64,7 +64,7 @@ This project implements a **Retrieval-Augmented Generation (RAG)** chatbot that 
 To start the chatbot interface, run:
 
 ```bash
-streamlit run app.py
+streamlit run frontend.py
 ```
 
 This will launch the Streamlit app in your browser. You can enter your question in the text input field, and upon clicking "Get Answer," the chatbot will retrieve the relevant context and display an answer in bullet points.
