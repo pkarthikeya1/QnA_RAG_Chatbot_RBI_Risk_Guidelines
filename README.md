@@ -135,9 +135,3 @@ Contributions are welcome! Please follow these steps:
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
-
-For any questions or issues, please open an issue on the repository or contact [your-email@example.com](mailto:your-email@example.com).
-
-Happy coding!
