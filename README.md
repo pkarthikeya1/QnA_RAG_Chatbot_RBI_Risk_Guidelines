@@ -4,8 +4,8 @@ This project implements a **Retrieval-Augmented Generation (RAG)** chatbot that 
 ---
 ### System Architecture
 <p align="center">
-  <img src="System_Arc.png" alt="Screen Shot" width="400" height="
-  400" />
+  <img src="System_Arc.png" alt="Screen Shot" width="500" height="
+  500" />
 </p>
 
 
