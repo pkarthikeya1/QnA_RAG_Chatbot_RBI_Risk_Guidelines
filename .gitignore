@@ -1,4 +1,8 @@
 data/
 financial_operations_risk_guidelines/
 venv/
+<<<<<<< HEAD
 .env
+=======
+.env
+>>>>>>> 7c2a8998d933b94039e6b092b35c50ef6729c04c
