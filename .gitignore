@@ -1,3 +1,4 @@
 data/
 financial_operations_risk_guidelines/
 venv/
+.env
