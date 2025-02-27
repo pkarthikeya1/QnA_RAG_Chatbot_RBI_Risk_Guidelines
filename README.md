@@ -5,11 +5,15 @@ This project implements a **Retrieval-Augmented Generation (RAG)** chatbot that 
 ### System Architecture
 <p align="center">
   <img src="System_Arc.png" alt="Screen Shot" width="500" height="
-  500" />
+  400" />
 </p>
 
 
 ## Features
+<p align="center">
+  <img src="RBI_Risk_Chatbot.svg" alt="Screen Shot" width="500" height="
+  300" />
+</p>
 
 - **Retrieval-Augmented Generation (RAG):**  
   Combines document retrieval (via FAISS) with language generation for accurate, context-based responses.
