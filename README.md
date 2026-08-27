@@ -1,147 +1,116 @@
-# RBI Financial & Operations Risk Guidelines Chatbot
+# RBI Financial & Operations Risk Guidelines — RAG Chatbot
 
-This project implements a Retrieval-Augmented Generation (RAG) chatbot that answers questions related to the Reserve Bank of India (RBI) Financial and Operations Risk Guidelines. The system uses a FAISS vector store to retrieve context from ingested documents and leverages an Ollama-backed language model (via LangChain) to generate concise, bullet-pointed responses. A Streamlit frontend provides a user-friendly web interface.
+A retrieval-augmented generation (RAG) system that answers questions about the Reserve Bank of India's Financial and Operations Risk guidelines. Questions are answered from the source documents rather than from model memory: relevant passages are retrieved from a FAISS vector index and passed to a locally hosted LLM, which generates a grounded, bullet-pointed answer.
 
-### System Architecture
-<p align="center">
-  <img src="System_Arc.png" alt="Screen Shot" width="500" height="
-  400" />
-</p>
+Built with LangChain, FAISS, Ollama, and Streamlit.
 
 ---
-## Features
+
+## System Architecture
+
 <p align="center">
-  <img src="RBI_Risk_Chatbot.svg" alt="Screen Shot" width="500" height="
-  300" />
+  <img src="System_Arc.png" alt="System architecture" width="500" />
 </p>
 
-- **Retrieval-Augmented Generation (RAG):**  
-  Combines document retrieval (via FAISS) with language generation for accurate, context-based responses.
+<p align="center">
+  <img src="RBI_Risk_Chatbot.svg" alt="Retrieval and generation flow" width="500" />
+</p>
 
-- **Customizable Document Chunking:**  
-  Supports tuning chunk sizes and overlaps to best capture context from financial guidelines.
+The pipeline has four stages:
 
-- **Streamlit Frontend:**  
-  An easy-to-use web interface for querying the chatbot.
+1. **Ingestion** — RBI guideline documents are loaded and split into overlapping chunks.
+2. **Indexing** — Chunks are embedded with `<EMBEDDING_MODEL>` and stored in a local FAISS index.
+3. **Retrieval** — An incoming question is embedded and matched against the index to pull the top-k most similar chunks.
+4. **Generation** — The retrieved chunks are supplied as context to `<OLLAMA_MODEL>` via Ollama, which produces the answer.
 
-- **Modular Design:**  
-  The core QA logic is encapsulated in a `get_answer` function (in a separate module), which is imported into the Streamlit app.
+---
+
+## Why retrieval rather than a fine-tuned or general-purpose model
+
+Regulatory guidance is long, frequently revised, and only useful when tied back to the text it came from. Retrieval keeps answers anchored to the current source documents, and makes it possible to update the corpus without retraining anything.
+
+---
 
 ## Project Structure
 
 ```
 .
-├── frontend.py             # Streamlit frontend for the chatbot
-├── chatbot_backend.py      # Contains the get_answer() function and RAG pipeline logic
-├── RAG-Project.ipynb   
-├── README.md              # This file
-└── requirements.txt   # Python dependencies
+├── frontend.py            # Streamlit interface
+├── chatbot_backend.py     # get_answer() — retrieval + generation pipeline
+├── RAG-Project.ipynb      # Ingestion, chunking, and index construction
+├── requirements.txt       # Python dependencies
+└── README.md
 ```
 
-## Installation
+---
 
-1. **Clone the Repository:**
+## Setup
 
-   ```bash
-   git clone https://github.com/yourusername/rbi-risk-chatbot.git
-   cd rbi-risk-chatbot
-   ```
+**1. Clone and enter the repository**
 
-2. **Create a Virtual Environment (Recommended):**
+```bash
+git clone https://github.com/pkarthikeya1/<REPO_NAME>.git
+cd <REPO_NAME>
+```
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate      # On Windows: venv\Scripts\activate
-   ```
+**2. Create a virtual environment** (Python 3.9+)
 
-3. **Install the Dependencies:**
+```bash
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
+```
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+**3. Install dependencies**
 
-   > **Note:** Ensure you have Python 3.7 or higher installed.
+```bash
+pip install -r requirements.txt
+```
 
-4. **Additional Setup:**
-   - **Ollama Server:** Make sure your Ollama server is running at `127.0.0.1:11434` (or update the base URL in the code accordingly).
-   - **Vector Store:** The FAISS vector store is loaded from a local directory named `financial_operations_risk_guidelines`. Ensure this database exists or follow your ingestion pipeline to create it.
+**4. Start Ollama**
 
-## Usage
+The backend expects an Ollama server at `127.0.0.1:11434`. Update the base URL in `chatbot_backend.py` if yours differs.
 
-### Running the Chatbot (Streamlit Frontend)
+```bash
+ollama serve
+ollama pull <OLLAMA_MODEL>
+```
 
-To start the chatbot interface, run:
+**5. Build the vector index**
+
+The FAISS index is read from a local directory named `financial_operations_risk_guidelines`. If it isn't present, run the ingestion cells in `RAG-Project.ipynb` to build it from the source documents.
+
+---
+
+## Running the chatbot
 
 ```bash
 streamlit run frontend.py
 ```
 
-This will launch the Streamlit app in your browser. You can enter your question in the text input field, and upon clicking "Get Answer," the chatbot will retrieve the relevant context and display an answer in bullet points.
+Enter a question, click **Get Answer**, and the system retrieves the relevant guideline passages and returns an answer in bullet points.
 
-### Tuning the Document Chunking Size
+---
 
-The quality of the retrieved context depends on how your documents are split into chunks. You can experiment with different chunk sizes and overlaps using a script similar to the example below:
+## Design notes
 
-```python
-# chunk_tuning.py
+**Chunking.** Retrieval quality is bounded by how the source documents are split. Chunks that are too small lose the surrounding clause context; chunks that are too large dilute the embedding and crowd the model's context window. The current implementation uses character-based splitting with configurable size and overlap.
 
-from langchain.text_splitter import CharacterTextSplitter
+**Retrieval depth.** The number of chunks passed to the model (`k`) trades recall against context noise — a higher `k` is more likely to contain the correct passage but gives the model more irrelevant text to reason around.
 
-# Sample document (replace with your actual document content)
-document_text = """
-The Reserve Bank of India (RBI) has established comprehensive financial and operations risk guidelines to ensure the stability of the financial system.
-These guidelines cover topics including risk management practices, capital adequacy, stress testing, and contingency planning.
-They are designed to help banks identify, measure, monitor, and control their risks.
-...
-"""
+---
 
-# Experiment with different chunk sizes and overlaps
-chunk_sizes = [100, 200, 300]
-chunk_overlap = 50  # Adjust overlap as needed
+## Roadmap
 
-for chunk_size in chunk_sizes:
-    print(f"\n{'='*40}\nUsing chunk size: {chunk_size} with overlap: {chunk_overlap}\n{'='*40}")
-    text_splitter = CharacterTextSplitter(
-        separator="\n\n",
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap
-    )
-    
-    chunks = text_splitter.split_text(document_text)
-    
-    print(f"Number of chunks: {len(chunks)}\n")
-    for i, chunk in enumerate(chunks):
-        print(f"Chunk {i+1}:\n{chunk}\n{'-'*40}")
-```
+Work in progress, in priority order:
 
-Run the script with:
+- **Evaluation harness** — a labelled set of benchmark questions paired with their correct source clauses, scored on Recall@k and MRR, so retrieval changes can be measured rather than eyeballed.
+- **Source citations** — return the originating section number and document alongside each answer, so responses can be traced back to the guideline text.
+- **Structure-aware chunking** — split on the numbered clause hierarchy of RBI master directions instead of on character counts, carrying section identifiers as chunk metadata.
+- **Hybrid retrieval** — combine lexical (BM25) and dense retrieval, since regulatory text depends heavily on exact terminology and circular references.
+- **Standalone ingestion script** — extract index construction from the notebook into a reproducible CLI entry point.
 
-```bash
-python chunk_tuning.py
-```
-
-Review the output to determine which settings best preserve context without exceeding the language model’s token limits.
-
-## Evaluation
-
-To evaluate the chatbot:
-- **Automated Metrics:**  
-  Use retrieval metrics (e.g., Recall@k) if you have a set of benchmark questions with known relevant context.
-  
-- **Human Evaluation:**  
-  Have domain experts review a sample of responses for correctness, clarity, and relevance.
-
-- **Performance Testing:**  
-  Monitor response latency and scalability under load.
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Commit your changes and push the branch.
-4. Open a Pull Request with a description of your changes.
+---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+MIT — see [LICENSE](LICENSE).
