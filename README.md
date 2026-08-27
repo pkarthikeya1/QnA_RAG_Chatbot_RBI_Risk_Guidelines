@@ -1,4 +1,3 @@
-
 # RBI Financial & Operations Risk Guidelines — RAG Chatbot
 
 A retrieval-augmented generation (RAG) system that answers questions about the Reserve Bank of India's Financial and Operations Risk guidelines. Answers are generated from the source documents rather than from model memory: relevant passages are retrieved from a FAISS vector index and passed to a locally hosted LLM, which returns a grounded, bullet-pointed response.
@@ -164,37 +163,29 @@ Chunking
 
 Retrieval quality is bounded by how the source documents are split.
 
-Chunks that are too small lose the surrounding clause context; chunks that are too large dilute the embedding and crowd the model's context window.
+- Too small → loses surrounding clause context
+- Too large → dilutes the embedding and crowds the model's context window.
 
 The chunking ablation above measures the effect of the splitting strategy on retrieval performance.
 
 Retrieval Depth
 
-k=5 trades recall against context noise — a higher k is more likely to contain the correct passage, but gives the model more irrelevant text to reason around and consumes more of the context window.
+k=5 trades recall against context noise.
 
-The Recall@1, Recall@3, and Recall@5 results show that most of the retrieval gain is achieved by the first few results, with a further improvement when expanding retrieval to five chunks.
+- Higher k → more likely to contain the correct passage, but gives the model more irrelevant text and consumes more of the context window.
 
-Grounding
+- The Recall@1, Recall@3, and Recall@5 results show that most of the retrieval gain is achieved by the first few results, with a further improvement when expanding retrieval to five chunks.
 
-The prompt instructs the model to answer from the retrieved context only and to decline when the context doesn't support an answer.
+`Grounding`
+
+- The prompt instructs the model to answer from the retrieved context only and to decline when the context doesn't support an answer.
 
 For regulatory questions, a refusal is a better outcome than a fluent guess.
 
 ---
 
-Further Work
 
-· Source citations in responses — return the originating section number and document alongside each answer, so responses can be traced back to the guideline text.
-· Hybrid retrieval — combine lexical (BM25) and dense retrieval, since regulatory text depends heavily on exact terminology and circular references.
-· Standalone ingestion script — extract index construction from the notebook into a reproducible CLI entry point.
-· Reranking — add a reranking stage to improve the ordering of retrieved passages before they are passed to the LLM.
-· Generation evaluation — introduce a separate benchmark for answer faithfulness, relevance, completeness, and citation accuracy.
-· Automated evaluation in CI — run the retrieval benchmark automatically when changes are made to chunking, embeddings, or retrieval configuration.
-
----
 
 License
 
 MIT
-
-```
