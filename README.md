@@ -1,3 +1,4 @@
+
 # RBI Financial & Operations Risk Guidelines — RAG Chatbot
 
 A retrieval-augmented generation (RAG) system that answers questions about the Reserve Bank of India's Financial and Operations Risk guidelines. Answers are generated from the source documents rather than from model memory: relevant passages are retrieved from a FAISS vector index and passed to a locally hosted LLM, which returns a grounded, bullet-pointed response.
@@ -70,14 +71,17 @@ RBI master directions are hierarchically numbered, and character-based splitting
 
 ## Reproducing the Evaluation
 
-```python evaluate.py --benchmark benchmark.jsonl --k 5```
+```bash
+python evaluate.py --benchmark benchmark.jsonl --k 5
+```
 
 benchmark.jsonl holds one record per question:
 
+```json
 {"question": "...", "source_document": "...", "section": "...", "notes": "..."}
+```
 
 The evaluation script reports Recall@k and MRR based on whether the labelled source clause appears in the retrieved results.
-
 
 ---
 
@@ -87,11 +91,11 @@ The benchmark covers the Financial and Operations Risk guidelines only, and was 
 
 Retrieval metrics bound answer quality but do not measure generation quality — whether the model faithfully uses a correctly retrieved clause is assessed separately by manual review of a sample.
 
-
 ---
 
 Project Structure
 
+```
 .
 ├── frontend.py            # Streamlit interface
 ├── chatbot_backend.py     # get_answer() — retrieval + generation chain
@@ -102,57 +106,55 @@ Project Structure
 ├── RBI_Risk_Chatbot.svg   # Retrieval/generation flow diagram
 ├── requirements.txt       # Python dependencies
 └── README.md
-
+```
 
 ---
 
 Setup
 
 1. Clone and enter the repository
-
-git clone https://github.com/pkarthikeya1/QnA_RAG_Chatbot_RBI_Risk_Guidelines.git
-cd QnA_RAG_Chatbot_RBI_Risk_Guidelines
-
+   ```bash
+   git clone https://github.com/pkarthikeya1/QnA_RAG_Chatbot_RBI_Risk_Guidelines.git
+   cd QnA_RAG_Chatbot_RBI_Risk_Guidelines
+   ```
 2. Create a virtual environment
-
-Python 3.9+ is required.
-
-python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
-
+   Python 3.9+ is required.
+   ```bash
+   python -m venv venv
+   source venv/bin/activate      # Windows: venv\Scripts\activate
+   ```
 3. Install dependencies
-
-pip install -r requirements.txt
-
+   ```bash
+   pip install -r requirements.txt
+   ```
 4. Start Ollama and pull both models
-
-The backend expects an Ollama server at 127.0.0.1:11434. Update base_url in chatbot_backend.py if yours differs.
-
-ollama serve
-ollama pull nomic-embed-text
-ollama pull llama3.2
-
+   The backend expects an Ollama server at 127.0.0.1:11434. Update base_url in chatbot_backend.py if yours differs.
+   ```bash
+   ollama serve
+   ollama pull nomic-embed-text
+   ollama pull llama3.2
+   ```
 5. Build the vector index
-
-The FAISS index is loaded from a local directory named financial_operations_risk_guidelines/, which is not committed to the repository.
-
-Run the ingestion cells in RAG-project.ipynb to build it from the source guideline documents before starting the app.
-
+   The FAISS index is loaded from a local directory named financial_operations_risk_guidelines/, which is not committed to the repository.
+   Run the ingestion cells in RAG-project.ipynb to build it from the source guideline documents before starting the app.
 
 ---
 
 Running the Chatbot
 
+```bash
 streamlit run frontend.py
+```
 
 Enter a question, click Get Answer, and the system retrieves the relevant guideline passages and returns an answer in bullet points.
 
 The backend can also be called directly:
 
+```python
 from chatbot_backend import get_answer
 
 print(get_answer("What are the board's responsibilities in outsourcing of financial services?"))
-
+```
 
 ---
 
@@ -178,27 +180,21 @@ The prompt instructs the model to answer from the retrieved context only and to 
 
 For regulatory questions, a refusal is a better outcome than a fluent guess.
 
-
 ---
 
 Further Work
 
-Source citations in responses — return the originating section number and document alongside each answer, so responses can be traced back to the guideline text.
-
-Hybrid retrieval — combine lexical (BM25) and dense retrieval, since regulatory text depends heavily on exact terminology and circular references.
-
-Standalone ingestion script — extract index construction from the notebook into a reproducible CLI entry point.
-
-Reranking — add a reranking stage to improve the ordering of retrieved passages before they are passed to the LLM.
-
-Generation evaluation — introduce a separate benchmark for answer faithfulness, relevance, completeness, and citation accuracy.
-
-Automated evaluation in CI — run the retrieval benchmark automatically when changes are made to chunking, embeddings, or retrieval configuration.
-
-
+· Source citations in responses — return the originating section number and document alongside each answer, so responses can be traced back to the guideline text.
+· Hybrid retrieval — combine lexical (BM25) and dense retrieval, since regulatory text depends heavily on exact terminology and circular references.
+· Standalone ingestion script — extract index construction from the notebook into a reproducible CLI entry point.
+· Reranking — add a reranking stage to improve the ordering of retrieved passages before they are passed to the LLM.
+· Generation evaluation — introduce a separate benchmark for answer faithfulness, relevance, completeness, and citation accuracy.
+· Automated evaluation in CI — run the retrieval benchmark automatically when changes are made to chunking, embeddings, or retrieval configuration.
 
 ---
 
 License
 
 MIT
+
+```
